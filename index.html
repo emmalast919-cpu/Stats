@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LogHub — Status</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="/">
+      <img src="/favicon.svg" alt="LogHub" />
+      LogHub
+    </a>
+    <span id="lastUpdated" class="last-updated"></span>
+  </nav>
+
+  <main class="wrap">
+    <h1>Bot Status</h1>
+
+    <div class="grid">
+      <div class="card">
+        <span class="dot dot-gray" id="statusDot"></span>
+        <span class="card-label">Status</span>
+        <strong class="card-value" id="statusValue">Checking…</strong>
+      </div>
+      <div class="card">
+        <span class="card-label">Servers</span>
+        <strong class="card-value" id="serversValue">—</strong>
+      </div>
+      <div class="card">
+        <span class="card-label">Users</span>
+        <strong class="card-value" id="usersValue">—</strong>
+      </div>
+      <div class="card">
+        <span class="card-label">Uptime</span>
+        <strong class="card-value" id="uptimeValue">—</strong>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function fmtUptime(ms) {
+      if (!ms) return "—";
+      const s = Math.floor(ms / 1000);
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (h) return `${h}h ${m}m`;
+      if (m) return `${m}m ${sec}s`;
+      return `${sec}s`;
+    }
+
+    async function loadStatus() {
+      const dot = document.getElementById("statusDot");
+      const statusValue = document.getElementById("statusValue");
+      try {
+        const res = await fetch("/api/status");
+        const data = await res.json();
+        const online = Boolean(data.online);
+
+        dot.className = "dot " + (online ? "dot-green" : "dot-red");
+        statusValue.textContent = online ? "Online" : (data.reachable ? "Offline" : "Unreachable");
+        statusValue.className = "card-value " + (online ? "ok" : "bad");
+
+        document.getElementById("serversValue").textContent = data.guildCount ?? 0;
+        document.getElementById("usersValue").textContent  = data.userCount ?? 0;
+        document.getElementById("uptimeValue").textContent = fmtUptime(data.uptimeMs);
+        document.getElementById("lastUpdated").textContent = "Updated " + new Date().toLocaleTimeString();
+      } catch (err) {
+        dot.className = "dot dot-red";
+        statusValue.textContent = "Error";
+        statusValue.className = "card-value bad";
+      }
+    }
+
+    loadStatus();
+    setInterval(loadStatus, 10000);
+  </script>
+</body>
+</html>
