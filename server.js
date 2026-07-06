@@ -20,7 +20,11 @@ const MANAGE_GUILD  = 0x20;
 const ADMINISTRATOR = 0x8;
 
 // Must match EXACTLY what is registered in the Discord Developer Portal (OAuth2 → Redirects).
+// ─── PUT YOUR OWN REDIRECT URI HERE (e.g. "https://your-app.onrender.com/") ───
+const MY_REDIRECT_URI = "";
+// ────────────────────────────────────────────────────────────────────────────
 function getRedirectUri(req) {
+  if (MY_REDIRECT_URI) return MY_REDIRECT_URI;
   if (process.env.DISCORD_REDIRECT_URI) return process.env.DISCORD_REDIRECT_URI;
   if (process.env.REPLIT_DEV_DOMAIN) return `https://${process.env.REPLIT_DEV_DOMAIN}/`;
   const proto = req.headers["x-forwarded-proto"] || req.protocol;
@@ -405,4 +409,4 @@ app.get("/:file", (req, res, next) => {
 app.listen(PORT, "0.0.0.0", () => console.log(`[website] Listening on :${PORT}`));
 
 module.exports = app;
-        
+                                           
